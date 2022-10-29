@@ -6,7 +6,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 double CPM_moves(VOX* pv, short * CCAlabels, BOX* pb, FIBERS* pf, CM* CMs, 
-int* attached, int* csize)
+int* attached, int* csize, double MAX_FOCALS_CM, double MAX_FOCALS_FB)
 // cellular potts model: one Monte Carlo step
 {
 	int i,j,NRsteps = NV;

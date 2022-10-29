@@ -10,13 +10,13 @@
 // init.c
 int* 		alloc_attach(int NRc);
 VOX*		init_voxels(void);
-int 		init_cells(VOX* pv, int * types, BOX* pb);
+int 		init_cells(VOX* pv, int * types, BOX* pb, int NCX, int NCY);
 FIBERS* 	set_fibers(void);
 
 
 // cellmoves.c
 double 		CPM_moves(VOX* pv, short * CCAlabels,BOX* pb, FIBERS* pf, 
-CM* CMs, int* attached, int* csize);
+CM* CMs, int* attached, int* csize, double MAX_FOCALS_CM, double MAX_FOCALS_FB);
 double 		CH_moves(VOX* pv, CM* CMs, double k);
 BOOL 		splitcheckCCR(VOX* pv, short * CCAlabels, BOX* pb,  
 int* csize, int xt, int ttag);
