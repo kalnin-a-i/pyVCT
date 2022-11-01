@@ -11,7 +11,7 @@ OBJECTS = CPM_dH.o \
 LDFLAGS += -lc 
 # include standard math library
 LDFLAGS += -lm
-CFLAGS += -fPIC
+CFLAGS +=-fPIC
 
 
 libcpmfem.a: $(OBJECTS)
