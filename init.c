@@ -40,7 +40,7 @@ VOX* init_voxels(void)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-int init_cells(VOX* pv, int * types, BOX* pb, int NCX, int NCY)
+int init_cells(VOX* pv, int * types, BOX* pb, int NCX, int NCY, double PART)
 {
 	int v, vx, vy, i, j, ix, iy;
 	int NRc;

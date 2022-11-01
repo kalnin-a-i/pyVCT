@@ -2,7 +2,7 @@
 #ifndef _DEF
 #define _DEF
 
-#define NULL 0
+// #define NULL 0
 #define FALSE 0
 #define TRUE 1
 typedef int BOOL;
@@ -59,7 +59,7 @@ char CONT;
 char CONT_INHIB;
 double GN_CM;
 double GN_FB;
-#define PART 0.50 			//% FBs
+double PART; 			//% FBs
 
 //elasticity
 double TARGETVOLUME_CM;

@@ -3,66 +3,33 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <math.h>
-
-static char *options = "p:smfc";
-static char *program_name;
-
-void parse_options(int argc, char *argv[])
-{
-    int opt;
-
-    program_name = argv[0];
-    silence=0;
-    distanceF=20.0;
-    shifts=0;
-    CONT = 0;
-    CONT_INHIB = 1;
-    #include "conf/cnfgSN.cfg"
-
-    while ((opt = getopt(argc, argv, options)) != -1) {
-        switch (opt) {
-        case 'p':
-        	SEED			= atoi(strtok(optarg, ","));
-            NRINC			= atoi(strtok(NULL, ","));          
-            break;
-        case 's':
-        	silence=1;
-        	break;
-        case 'f':
-        	distanceF = 0.010;
-
-        	#include "conf/cnfgSF.cfg"
-
-        	break;
-        case 'm':
-        	shifts = 1;
-        	break;
-        case 'c':			//move contacts if they are under the cell. If CONT=0, then only contacts on the perifery move.
-        	CONT = 1;			//switches on movement of the attachment sites under the cell, not only on the periphery
-        	CONT_INHIB = 0;		//switches off simple variant of contact inhibitio, when the cell just does not create new attachment sites when it is facing a neighbouring cell there
-        						//these two properties can be separated. In "Virtual cardiac monolayers..." we used 		CONT = 0, CONT_INHIB = 1
-        						//for pathways formation we changes the idea behind contact inhibition, so we switched to 	CONT = 1, CONT_INHIB = 0
-        	break;
-        default:
-            printf("Wrong parameter");
-            break;
-        }
-    }
-
-    if(shifts==1)
-    	if(distanceF>1.0){
-		    #include "conf/cnfgMN.cfg"
-    	}
-    	else{
-    		#include "conf/cnfgMF.cfg"
-    	}
-    
-    NCX *= MULT;
-    NCY *= MULT;
-}
+#include "libcpmfem.h"
 
 
-int main(int argc, char *argv[])
+
+int cpmfem(
+	int NCX, int NCY, 
+	double PART,
+	double GN_CM,
+	double GN_FB,
+	double TARGETVOLUME_CM,
+	double DETACH_CM,
+	double DETACH_FB,
+	double INELASTICITY_FB,
+	double INELASTICITY_CM,
+	double JCMMD,
+	double JFBMD,
+	double JCMCM,
+	double JFBFB,
+	double JFBCM,
+	double UNLEASH_CM,
+	double UNLEASH_FB,
+	double LMAX_CM,
+	double LMAX_FB,
+	double MAX_FOCALS_CM,
+	double MAX_FOCALS_FB
+	
+)
 {
 
 	struct timeval tv;
@@ -76,8 +43,6 @@ int main(int argc, char *argv[])
 	int *csize;
 	int incr, startincr;
 	double acceptance, acceptance_phi;
-
-	parse_options(argc, argv);
 	
 	if(!silence){
 		printf("SEED = %d\n",SEED);
@@ -121,7 +86,7 @@ int main(int argc, char *argv[])
 
 	startincr = 0;
 	types = calloc((NCX*NCY+1), sizeof(int));
-	NRc = init_cells(pv,types,pb);write_cells(pv,0);
+	NRc = init_cells(pv,types,pb,NCX,NCY, PART);write_cells(pv,0);
 	csize = calloc(NRc, sizeof(int)); for(c=0;c<NRc;c++) {csize[c]=0;}
 	for(v=0;v<NV;v++) {if(pv[v].ctag) {csize[pv[v].ctag-1]++;}}
 
@@ -147,8 +112,7 @@ int main(int argc, char *argv[])
 		}
 
 		findCM(pv,CMs,NRc);
-		acceptance = CPM_moves(pv,CCAlabels,pb,pf,CMs, 
-attached,csize);
+		acceptance = CPM_moves(pv,CCAlabels,pb,pf,CMs,attached,csize,MAX_FOCALS_CM,MAX_FOCALS_FB);
 
 		if (incr % STEP_PRINT == 0 && !silence){
 			printf("\nAcceptance rate %.4f",acceptance);
