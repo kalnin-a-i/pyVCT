@@ -8,6 +8,7 @@ int cpmfem(
 	double GN_CM,
 	double GN_FB,
 	double TARGETVOLUME_CM,
+	double TARGETVOLUME_FB,
 	double DETACH_CM,
 	double DETACH_FB,
 	double INELASTICITY_FB,

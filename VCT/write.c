@@ -89,7 +89,7 @@ void write_fibers(FIBERS* pf)
   for(vx=0; vx<NVX; vx++) {
       for (vy=0; vy<NVY; vy++) {
         v = vx + vy * NVX;
-         fprintf(ofp ,"%d ", pf[v].Q);
+        fprintf(ofp ,"%d ", pf[v].Q);
       }
       fprintf(ofp, "\n");
   }
