@@ -10,8 +10,8 @@
 // init.c
 int* 		alloc_attach(int NRc);
 VOX*		init_voxels(void);
-int 		init_cells(VOX* pv, int * types, BOX* pb, int NCX, int NCY, double PART);
-FIBERS* 	set_fibers(void);
+int 		init_cells(VOX* pv, int * types, BOX* pb, int NCX, int NCY, double PART, int shifts);
+FIBERS* 	set_fibers(double distanceF);
 
 
 // cellmoves.c

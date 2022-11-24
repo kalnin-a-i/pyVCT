@@ -28,7 +28,9 @@ int cpmfem(
 	double LMAX_CM,
 	double LMAX_FB,
 	double MAX_FOCALS_CM,
-	double MAX_FOCALS_FB
+	double MAX_FOCALS_FB,
+	int shifts,
+	double distanceF
 	
 )
 {
@@ -46,8 +48,6 @@ int cpmfem(
 	double acceptance, acceptance_phi;
 	CONT = 0;
     CONT_INHIB = 1;
-	shifts = 1;
-	distanceF = 0.010;
 	int NRINC=3001;
 	
 	if(!silence){
@@ -85,14 +85,14 @@ int cpmfem(
 	/// INITIALIZE ///
    	srand(SEED); mt_init();
    	pv = init_voxels();
-	pf = set_fibers();
+	pf = set_fibers(distanceF);
 	BOX * pb = allocBOX(NCX*NCY+1);
 
 	write_fibers(pf);
 
 	startincr = 0;
 	types = calloc((NCX*NCY+1), sizeof(int));
-	NRc = init_cells(pv,types,pb,NCX,NCY, PART);write_cells(pv,0);
+	NRc = init_cells(pv,types,pb,NCX,NCY, PART, shifts);write_cells(pv,0);
 	csize = calloc(NRc, sizeof(int)); for(c=0;c<NRc;c++) {csize[c]=0;}
 	for(v=0;v<NV;v++) {if(pv[v].ctag) {csize[pv[v].ctag-1]++;}}
 

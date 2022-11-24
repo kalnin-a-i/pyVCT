@@ -19,11 +19,13 @@ cdef extern from "libcpmfem.h":
 	double LMAX_CM,
 	double LMAX_FB,
 	double MAX_FOCALS_CM,
-	double MAX_FOCALS_FB)
+	double MAX_FOCALS_FB,
+	int shifts,
+	double distanceF)
 
 def py_cpmfem(NCX, NCY, PART, GN_CM, GN_FB, TARGETVOLUME_CM, TARGETVOLUME_FB, DETACH_CM, DETACH_FB, INELASTICITY_CM,
               INELASTICITY_FB, JCMMD, JFBMD, JCMCM, JFBFB, JFBCM, UNLEASH_CM, UNLEASH_FB, LMAX_CM, LMAX_FB,
-              MAX_FOCALS_CM, MAX_FOCALS_FB):
+              MAX_FOCALS_CM, MAX_FOCALS_FB, shifts, distanceF):
     return cpmfem(NCX, NCY, PART, GN_CM, GN_FB, TARGETVOLUME_CM, TARGETVOLUME_FB, DETACH_CM, DETACH_FB, INELASTICITY_CM,
               INELASTICITY_FB, JCMMD, JFBMD, JCMCM, JFBFB, JFBCM, UNLEASH_CM, UNLEASH_FB, LMAX_CM, LMAX_FB,
-              MAX_FOCALS_CM, MAX_FOCALS_FB)
+              MAX_FOCALS_CM, MAX_FOCALS_FB, shifts, distanceF)

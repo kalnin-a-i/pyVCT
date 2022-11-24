@@ -40,7 +40,7 @@ VOX* init_voxels(void)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-int init_cells(VOX* pv, int * types, BOX* pb, int NCX, int NCY, double PART)
+int init_cells(VOX* pv, int * types, BOX* pb, int NCX, int NCY, double PART, int shifts)
 {
 	int v, vx, vy, i, j, ix, iy;
 	int NRc;
@@ -86,7 +86,7 @@ int init_cells(VOX* pv, int * types, BOX* pb, int NCX, int NCY, double PART)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-FIBERS* set_fibers(void)
+FIBERS* set_fibers(double distanceF)
 {
 	FIBERS* pf;
 	

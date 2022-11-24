@@ -23,7 +23,9 @@ int cpmfem(
 	double LMAX_CM,
 	double LMAX_FB,
 	double MAX_FOCALS_CM,
-	double MAX_FOCALS_FB
+	double MAX_FOCALS_FB,
+	int shifts,
+	double distanceF
 );
 
 #endif
