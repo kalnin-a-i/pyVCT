@@ -6,7 +6,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 double CPM_moves(VOX* pv, short * CCAlabels, BOX* pb, FIBERS* pf, CM* CMs, 
-int* attached, int* csize, double MAX_FOCALS_CM, double MAX_FOCALS_FB)
+int* attached, int* csize, double MAX_FOCALS_CM, double MAX_FOCALS_FB, double TARGETVOLUME_CM, double TARGETVOLUME_FB, double INELASTICITY_CM, double INELASTICITY_FB, double LMAX_CM, double LMAX_FB, double GN_CM, double GN_FB, double UNLEASH_CM, double UNLEASH_FB, double DETACH_CM, double DETACH_FB)
 // cellular potts model: one Monte Carlo step
 {
 	int i,j,NRsteps = NV;
@@ -62,7 +62,8 @@ int* attached, int* csize, double MAX_FOCALS_CM, double MAX_FOCALS_FB)
 
 			if(go_on)
 			{
-				dH = calcdH(pv,pf,CMs,csize,xt,xs,pick,ttag,stag);
+				dH = calcdH(pv,pf,CMs,csize,xt,xs,pick,ttag,stag,TARGETVOLUME_CM, TARGETVOLUME_FB, INELASTICITY_CM, INELASTICITY_FB, LMAX_CM, LMAX_FB, GN_CM, GN_FB, UNLEASH_CM, UNLEASH_FB, DETACH_CM, DETACH_FB);
+				
         		prob = exp(-IMMOTILITY*dH);
         		if (prob>(rand()/(double)RAND_MAX))
         		{

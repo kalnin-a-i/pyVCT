@@ -44,6 +44,11 @@ int cpmfem(
 	int *csize;
 	int incr, startincr;
 	double acceptance, acceptance_phi;
+	CONT = 0;
+    CONT_INHIB = 1;
+	shifts = 1;
+	distanceF = 0.010;
+	int NRINC=3001;
 	
 	if(!silence){
 		printf("SEED = %d\n",SEED);
@@ -113,7 +118,7 @@ int cpmfem(
 		}
 
 		findCM(pv,CMs,NRc);
-		acceptance = CPM_moves(pv,CCAlabels,pb,pf,CMs,attached,csize,MAX_FOCALS_CM,MAX_FOCALS_FB);
+		acceptance = CPM_moves(pv,CCAlabels,pb,pf,CMs,attached,csize,MAX_FOCALS_CM,MAX_FOCALS_FB, TARGETVOLUME_CM, TARGETVOLUME_FB, INELASTICITY_CM, INELASTICITY_FB, LMAX_CM, LMAX_FB, GN_CM, GN_FB, UNLEASH_CM, UNLEASH_FB, DETACH_CM, DETACH_FB);
 
 		if (incr % STEP_PRINT == 0 && !silence){
 			printf("\nAcceptance rate %.4f",acceptance);

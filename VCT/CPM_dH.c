@@ -61,7 +61,7 @@ double calcdHdist(VOX* pv, CM* CMs, int xt, int xs, int ttag)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-double calcdH(VOX* pv, FIBERS* pf, CM* CMs, int* csize, int xt, int xs, int pick, int ttag, int stag)
+double calcdH(VOX* pv, FIBERS* pf, CM* CMs, int* csize, int xt, int xs, int pick, int ttag, int stag, double TARGETVOLUME_CM, double TARGETVOLUME_FB, double INELASTICITY_CM, double INELASTICITY_FB, double LMAX_CM, double LMAX_FB, double GN_CM, double GN_FB, double UNLEASH_CM, double UNLEASH_FB, double DETACH_CM, double DETACH_FB)
 {
 	double dH, dHcontact, dHvol, dHfocals, dHsyncytium, dHnuclei;
 	int ctag;
@@ -86,6 +86,40 @@ double calcdH(VOX* pv, FIBERS* pf, CM* CMs, int* csize, int xt, int xs, int pick
 	return dH;
 
 }
+
+//////////////////////////////////////////////////////////myfunc
+/*
+double printdH(VOX* pv, FIBERS* pf, CM* CMs, int* csize, int xt, int xs, int pick, int ttag, int stag)
+{
+	double dH, dHcontact, dHvol, dHfocals, dHsyncytium, dHnuclei;
+	int ctag;
+
+	dHcontact = 0;
+	dHcontact = calcdHcontact(pv,xt,xs,ttag,stag);
+
+	dHvol = 0;
+	dHvol = calcdHvol(csize,ttag,stag,pv[xt].type,pv[xs].type,TARGETVOLUME_CM, TARGETVOLUME_FB, INELASTICITY_CM, INELASTICITY_FB);
+
+	dHfocals = 0;
+	dHfocals = calcdHprotrude(pv, CMs, xt, xs, ttag, stag, pf[xt].Q, pf[xs].Q, LMAX_CM, LMAX_FB, GN_CM, GN_FB, UNLEASH_CM, UNLEASH_FB, DETACH_CM, DETACH_FB);
+
+	dHsyncytium = 0;
+	if(E_bond)
+		dHsyncytium = calcdHsyncytium(pv, CMs, xt,xs,ttag,stag);
+
+	dHnuclei = 0;
+	dHnuclei = calcdHnuclei(pv, CMs, xt, ttag, stag, DETACH_CM, DETACH_FB);
+
+	printf("dHcontact = %.2f\n",TARGETVOLUME(1));
+	printf("dHvol = %.2f\n",TARGETVOLUME(0));
+	printf("dHfocals = %.2f\n",LMAX_CM);
+	printf("dHsyncytium = %.2f\n",LMAX_FB);
+	printf("dHnuclei = %.2f\n",GN_CM);
+	
+
+}
+*/
+//////////////////////////////////////////////////////////myfunc
 
 ////////////////////////////////////////////////////////////////////////////////
 double calcdHsyncytium(VOX* pv, CM* CMs, int xt, int xs, int ttag, int stag)
@@ -148,8 +182,8 @@ double calcdHcontact(VOX* pv, int xt, int xs, int ttag, int stag)
 	for(n=0;n<8;n++)
 	{
 		nbtag = pv[nbs[n]].ctag;
-		Hcontact += contactenergy(ttag,nbtag,pv[xt].type,pv[nbs[n]].type,JCMCM,JFBFB,JFBCM,JCMMD,JFBMD);
-		Hcontactn += contactenergy(stag,nbtag,pv[xs].type,pv[nbs[n]].type,JCMCM,JFBFB,JFBCM,JCMMD,JFBMD);
+		Hcontact += contactenergy(ttag,nbtag,pv[xt].type,pv[nbs[n]].type,JCMCM,JCMMD,JFBFB,JFBMD,JFBCM);
+		Hcontactn += contactenergy(stag,nbtag,pv[xs].type,pv[nbs[n]].type,JCMCM,JCMMD,JFBFB,JFBMD,JFBCM);
 	}
 	dHcontact = Hcontactn-Hcontact;
 
