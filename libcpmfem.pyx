@@ -1,12 +1,11 @@
 from utils.parse_config import parse_config
 from libc.stdlib cimport malloc, free
 import numpy as np
-cdef extern from "structures.h":
-	ctypedef struct VOX:
-		int ctag
-		int contact
-		int type
-		int bond
+
+from Cython.Compiler import Options
+
+Options.docstrings = True
+
 cdef extern from "libcpmfem.h":
 	int cpmfem(int NCX, int NCY, 
 	double PART,
@@ -39,6 +38,21 @@ cdef extern from "libcpmfem.h":
 	int* ctag_m)
 	
 cpdef py_cpmfem(int NCX, int NCY, PART, double VOXSIZE, double sizeX, double sizeY, scenario, NRINC):
+	'''
+	Simulates VCT model
+	Args:
+		NCX: int, number of cells by x-axis
+		NCY: int, number of cells by y-axis
+		PART: float, percentage of fibroblasts
+		NRINC: int, number of simulation steps
+		VOXSIZE: double, domain size in mm
+		sizeX: double, horizontal simulation area size mm
+		sizeY: double, vertical simulation area size mm
+		scenario: str, one of 4('monolayer_on_fiber' , 'monolayer_without_fiber' , 'single_on_fiber' , 'single_without_fiber')
+	Returns:
+		(np.arrays for usage in draw.py)
+		types, ctags, fibers, contacts
+	'''
 	cdef char* typ = <char*>malloc(NCX*NCY*sizeof(char))
 	sizeMarginX = 0.1
 	sizeMarginY = 0.1
@@ -52,30 +66,29 @@ cpdef py_cpmfem(int NCX, int NCY, PART, double VOXSIZE, double sizeX, double siz
 	cfg = parse_config('./utils/config.yaml', scenario)
 	cpmfem(NCX, NCY, PART, VOXSIZE, NVX, NVY, cfg['GN_CM'], cfg['GN_FB'], cfg['TARGETVOLUME_CM'], cfg['TARGETVOLUME_FB'], cfg['DETACH_CM'], cfg['DETACH_FB'], cfg['INELASTICITY_FB'], cfg['INELASTICITY_CM'],  cfg['JCMMD'], cfg['JFBMD'], cfg['JCMCM'], cfg['JFBFB'], cfg['JFBCM'], cfg['UNLEASH_CM'], cfg['UNLEASH_FB'], cfg['LMAX_CM'], cfg['LMAX_FB'], cfg['MAX_FOCALS_CM'], cfg['MAX_FOCALS_FB'], cfg['shifts'], cfg['distanceF'], NRINC, typ, cont_m, fibr, ctag_m)
 	types=[]
-	table=[]
-	fibs=[]
-	conts=[]
+	ctags=[]
+	fibers=[]
+	contacts=[]
 	for i in range(NVY):
-		table.append([])
-		fibs.append([])
-		conts.append([])
+		ctags.append([])
+		fibers.append([])
+		contacts.append([])
 	for i in range(NVX):
 		for j in range(NVY):
 			k=i+j*NVX
-			table[i].append(ctag_m[k])
-			fibs[i].append(fibr[k])
-			conts[i].append(cont_m[k])
+			ctags[i].append(ctag_m[k])
+			fibers[i].append(fibr[k])
+			contacts[i].append(cont_m[k])
 	for i in range(NCX*NCY):
 		types.append(int(typ[i]))
 	
 	types=np.array(types)
-	table=np.array(table)
-	fibs=np.array(fibs)
-	conts=np.array(conts)		
+	ctags=np.array(ctags)
+	fibers=np.array(fibers)
+	contacts=np.array(contacts)		
 	free(typ)
 	free(cont_m)
 	free(fibr)
 	free(ctag_m)
-	# returns 4 np.arrays for draw.py file with the same names
-	return types, table, fibs, conts
+	return types, ctags, fibers, contacts
 
