@@ -39,7 +39,6 @@ cdef extern from "libcpmfem.h":
 	int* ctag_m)
 	
 cpdef py_cpmfem(int NCX, int NCY, PART, double VOXSIZE, double sizeX, double sizeY, scenario, NRINC):
-	
 	cdef char* typ = <char*>malloc(NCX*NCY*sizeof(char))
 	sizeMarginX = 0.1
 	sizeMarginY = 0.1
@@ -52,27 +51,31 @@ cpdef py_cpmfem(int NCX, int NCY, PART, double VOXSIZE, double sizeX, double siz
 
 	cfg = parse_config('./utils/config.yaml', scenario)
 	cpmfem(NCX, NCY, PART, VOXSIZE, NVX, NVY, cfg['GN_CM'], cfg['GN_FB'], cfg['TARGETVOLUME_CM'], cfg['TARGETVOLUME_FB'], cfg['DETACH_CM'], cfg['DETACH_FB'], cfg['INELASTICITY_FB'], cfg['INELASTICITY_CM'],  cfg['JCMMD'], cfg['JFBMD'], cfg['JCMCM'], cfg['JFBFB'], cfg['JFBCM'], cfg['UNLEASH_CM'], cfg['UNLEASH_FB'], cfg['LMAX_CM'], cfg['LMAX_FB'], cfg['MAX_FOCALS_CM'], cfg['MAX_FOCALS_FB'], cfg['shifts'], cfg['distanceF'], NRINC, typ, cont_m, fibr, ctag_m)
-	a=[]
-	b=[]
-	c=[]
-	d=[]
+	types=[]
+	table=[]
+	fibs=[]
+	conts=[]
 	for i in range(NVY):
-		d.append([])
-		b.append([])
-		c.append([])
+		table.append([])
+		fibs.append([])
+		conts.append([])
 	for i in range(NVX):
 		for j in range(NVY):
 			k=i+j*NVX
-			b[i].append(ctag_m[k])
-			c[i].append(fibr[k])
-			d[i].append(cont_m[k])
+			table[i].append(ctag_m[k])
+			fibs[i].append(fibr[k])
+			conts[i].append(cont_m[k])
 	for i in range(NCX*NCY):
-		a.append(int(typ[i]))
+		types.append(int(typ[i]))
 	
-			
+	types=np.array(types)
+	table=np.array(table)
+	fibs=np.array(fibs)
+	conts=np.array(conts)		
 	free(typ)
 	free(cont_m)
 	free(fibr)
 	free(ctag_m)
-	return a,b,c,d
+	# returns 4 np.arrays for draw.py file with the same names
+	return types, table, fibs, conts
 
