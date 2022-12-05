@@ -16,7 +16,7 @@ int* alloc_attach(int NRc)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-VOX* init_voxels(void)
+VOX* init_voxels(int NVX, int NVY)
 {
 	VOX* pv;
 	int v, vx, vy;
@@ -40,7 +40,7 @@ VOX* init_voxels(void)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-int init_cells(VOX* pv, int * types, BOX* pb, int NCX, int NCY, double PART, int shifts)
+int init_cells(VOX* pv, int * types, BOX* pb, int NCX, int NCY, double PART, int shifts, double TARGETVOLUME_FB, double VOXSIZE, int NVX, int NVY)
 {
 	int v, vx, vy, i, j, ix, iy;
 	int NRc;
@@ -86,7 +86,7 @@ int init_cells(VOX* pv, int * types, BOX* pb, int NCX, int NCY, double PART, int
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-FIBERS* set_fibers(double distanceF)
+FIBERS* set_fibers(double distanceF, double VOXSIZE, int NVX, int NVY)
 {
 	FIBERS* pf;
 	

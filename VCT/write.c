@@ -13,7 +13,7 @@ void write_increment(int increment)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-void write_cells(VOX* pv, int increment)
+void write_cells(VOX* pv, int increment, int NVX, int NVY)
 {
 	int v;
   int vx,vy;
@@ -53,7 +53,7 @@ void write_types(int* types, int NRc)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void write_contacts(VOX* pv, int increment)
+void write_contacts(VOX* pv, int increment, int NVX, int NVY)
 {
   int v;
     int vx,vy;
@@ -78,7 +78,7 @@ void write_contacts(VOX* pv, int increment)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void write_fibers(FIBERS* pf)
+void write_fibers(FIBERS* pf, int NVX, int NVY)
 {
   int v;
   int vx,vy;

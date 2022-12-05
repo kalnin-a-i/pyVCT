@@ -10,6 +10,8 @@
 int cpmfem(
 	int NCX, int NCY, 
 	double PART,
+	double VOXSIZE,
+	int NVX, int NVY,
 	double GN_CM,
 	double GN_FB,
 	double TARGETVOLUME_CM,
@@ -30,7 +32,12 @@ int cpmfem(
 	double MAX_FOCALS_CM,
 	double MAX_FOCALS_FB,
 	int shifts,
-	double distanceF
+	double distanceF,
+	int NRINC,
+	char* typ,
+	int* cont_m,
+	int* fibr,
+	int* ctag_m
 	
 )
 {
@@ -48,7 +55,6 @@ int cpmfem(
 	double acceptance, acceptance_phi;
 	CONT = 0;
     CONT_INHIB = 1;
-	int NRINC=3001;
 	
 	if(!silence){
 		printf("SEED = %d\n",SEED);
@@ -84,15 +90,15 @@ int cpmfem(
 
 	/// INITIALIZE ///
    	srand(SEED); mt_init();
-   	pv = init_voxels();
-	pf = set_fibers(distanceF);
+   	pv = init_voxels(NVX, NVY);
+	pf = set_fibers(distanceF, VOXSIZE, NVX, NVY);
 	BOX * pb = allocBOX(NCX*NCY+1);
 
-	write_fibers(pf);
+	write_fibers(pf, NVX, NVY);
 
 	startincr = 0;
 	types = calloc((NCX*NCY+1), sizeof(int));
-	NRc = init_cells(pv,types,pb,NCX,NCY, PART, shifts);write_cells(pv,0);
+	NRc = init_cells(pv,types,pb,NCX,NCY, PART, shifts, TARGETVOLUME_FB, VOXSIZE, NVX, NVY);write_cells(pv,0, NVX, NVY);
 	csize = calloc(NRc, sizeof(int)); for(c=0;c<NRc;c++) {csize[c]=0;}
 	for(v=0;v<NV;v++) {if(pv[v].ctag) {csize[pv[v].ctag-1]++;}}
 
@@ -113,12 +119,12 @@ int cpmfem(
 		if (incr % STEP_PRINT == 0){
 			if(!silence)
 				printf("\nSTART INCREMENT %d",incr);
-			write_cells(pv,incr);
-			write_contacts(pv,incr);
+			write_cells(pv,incr, NVX, NVY);
+			write_contacts(pv,incr, NVX, NVY);
 		}
 
-		findCM(pv,CMs,NRc);
-		acceptance = CPM_moves(pv,CCAlabels,pb,pf,CMs,attached,csize,MAX_FOCALS_CM,MAX_FOCALS_FB, TARGETVOLUME_CM, TARGETVOLUME_FB, INELASTICITY_CM, INELASTICITY_FB, LMAX_CM, LMAX_FB, GN_CM, GN_FB, UNLEASH_CM, UNLEASH_FB, DETACH_CM, DETACH_FB);
+		findCM(pv,CMs,NRc, NVX, NVY);
+		acceptance = CPM_moves(pv,CCAlabels,pb,pf,CMs,attached,csize,MAX_FOCALS_CM,MAX_FOCALS_FB, TARGETVOLUME_CM, TARGETVOLUME_FB, INELASTICITY_CM, INELASTICITY_FB, LMAX_CM, LMAX_FB, GN_CM, GN_FB, UNLEASH_CM, UNLEASH_FB, DETACH_CM, DETACH_FB, VOXSIZE, NVX, NVY, JCMCM, JCMMD, JFBFB, JFBMD, JFBCM);
 
 		if (incr % STEP_PRINT == 0 && !silence){
 			printf("\nAcceptance rate %.4f",acceptance);
@@ -129,30 +135,30 @@ int cpmfem(
 	if(!silence)
 	printf("\nSIMULATION FINISHED!\n");
 
-	write_contacts(pv,0);
+	write_contacts(pv,0, NVX, NVY);
 
 	/*pv = init_voxels();
 	read_cells(pv,types, NRc, "./output/ctags1.sout","./output/conts1.sout","./output/types.sout");*/
 
 	/// START DISTRIBUTION ///
-	findCM(pv,CMs,NRc);
+	findCM(pv,CMs,NRc, NVX, NVY);
 	for(incr=startincr; incr<NRINC_CH; incr++)
 	{
 		if (incr % 100 == 0){
 			if(!silence)
 				printf("\nSTART CHANNEL DISTRIBUTION %d",incr);
-			write_contacts(pv,incr+1);
+			write_contacts(pv,incr+1, NVX, NVY);
 		}
 
-		acceptance = CH_moves(pv, CMs, 0.5 + 0.5*incr/NRINC);
+		acceptance = CH_moves(pv, CMs, 0.5 + 0.5*incr/NRINC, VOXSIZE, NVX, NVY);
 
 		if (incr % 100 == 0 && !silence){
 			printf("\nAcceptance rate %.4f",acceptance);
 		}
 	}
 
-	write_cells(pv,1);
-	write_contacts(pv,1);
+	write_cells(pv,1, NVX, NVY);
+	write_contacts(pv,1, NVX, NVY);
 
 	/// END ///
 	if(!silence)
@@ -161,6 +167,23 @@ int cpmfem(
 	gettimeofday(&tv, NULL);
 	if(!silence)
 	printf("Took %lds\n", tv.tv_sec - time);
+	
+	//fill our outer massives//
+	int i,j,k;
+	for(i=0; i<NVX; i++) {
+    	for (j=0; j<NVY; j++) {
+        	k = i + j * NVX;
+   			ctag_m[k]=pv[k].ctag;
+			cont_m[k]=pv[k].contact;
+			fibr[k]=(char)pf[k].Q;
+		}
+    }
+	int l;
+	for(l=0; l<NRc; l++) {
+      typ[l] = types[1+l];
+    }
+
+	printf("\nmassives done!\n");
 
 	free(pv); 
 	free(pf);

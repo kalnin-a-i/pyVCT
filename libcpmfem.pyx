@@ -1,6 +1,17 @@
+from utils.parse_config import parse_config
+from libc.stdlib cimport malloc, free
+import numpy as np
+cdef extern from "structures.h":
+	ctypedef struct VOX:
+		int ctag
+		int contact
+		int type
+		int bond
 cdef extern from "libcpmfem.h":
-    int cpmfem(int NCX, int NCY, 
+	int cpmfem(int NCX, int NCY, 
 	double PART,
+	double VOXSIZE,
+	int NVX, int NVY,
 	double GN_CM,
 	double GN_FB,
 	double TARGETVOLUME_CM,
@@ -21,11 +32,47 @@ cdef extern from "libcpmfem.h":
 	double MAX_FOCALS_CM,
 	double MAX_FOCALS_FB,
 	int shifts,
-	double distanceF)
+	double distanceF, int NRINC,
+	char* typ,
+	int* cont_m,
+	int* fibr,
+	int* ctag_m)
+	
+cpdef py_cpmfem(int NCX, int NCY, PART, double VOXSIZE, double sizeX, double sizeY, scenario, NRINC):
+	
+	cdef char* typ = <char*>malloc(NCX*NCY*sizeof(char))
+	sizeMarginX = 0.1
+	sizeMarginY = 0.1
+	NVX = int(round((sizeX+2*sizeMarginX)/VOXSIZE))
+	NVY = int(round((sizeY+2*sizeMarginY)/VOXSIZE))
+	cdef int NV = NVX*NVY
+	cdef int* cont_m = <int*>malloc(NVX*NVY*sizeof(int))
+	cdef int* fibr = <int*>malloc(NVX*NVY*sizeof(int))
+	cdef int* ctag_m = <int*>malloc(NVX*NVY*sizeof(int))
 
-def py_cpmfem(NCX, NCY, PART, GN_CM, GN_FB, TARGETVOLUME_CM, TARGETVOLUME_FB, DETACH_CM, DETACH_FB, INELASTICITY_CM,
-              INELASTICITY_FB, JCMMD, JFBMD, JCMCM, JFBFB, JFBCM, UNLEASH_CM, UNLEASH_FB, LMAX_CM, LMAX_FB,
-              MAX_FOCALS_CM, MAX_FOCALS_FB, shifts, distanceF):
-    return cpmfem(NCX, NCY, PART, GN_CM, GN_FB, TARGETVOLUME_CM, TARGETVOLUME_FB, DETACH_CM, DETACH_FB, INELASTICITY_CM,
-              INELASTICITY_FB, JCMMD, JFBMD, JCMCM, JFBFB, JFBCM, UNLEASH_CM, UNLEASH_FB, LMAX_CM, LMAX_FB,
-              MAX_FOCALS_CM, MAX_FOCALS_FB, shifts, distanceF)
+	cfg = parse_config('./utils/config.yaml', scenario)
+	cpmfem(NCX, NCY, PART, VOXSIZE, NVX, NVY, cfg['GN_CM'], cfg['GN_FB'], cfg['TARGETVOLUME_CM'], cfg['TARGETVOLUME_FB'], cfg['DETACH_CM'], cfg['DETACH_FB'], cfg['INELASTICITY_FB'], cfg['INELASTICITY_CM'],  cfg['JCMMD'], cfg['JFBMD'], cfg['JCMCM'], cfg['JFBFB'], cfg['JFBCM'], cfg['UNLEASH_CM'], cfg['UNLEASH_FB'], cfg['LMAX_CM'], cfg['LMAX_FB'], cfg['MAX_FOCALS_CM'], cfg['MAX_FOCALS_FB'], cfg['shifts'], cfg['distanceF'], NRINC, typ, cont_m, fibr, ctag_m)
+	a=[]
+	b=[]
+	c=[]
+	d=[]
+	for i in range(NVY):
+		d.append([])
+		b.append([])
+		c.append([])
+	for i in range(NVX):
+		for j in range(NVY):
+			k=i+j*NVX
+			b[i].append(ctag_m[k])
+			c[i].append(fibr[k])
+			d[i].append(cont_m[k])
+	for i in range(NCX*NCY):
+		a.append(int(typ[i]))
+	
+			
+	free(typ)
+	free(cont_m)
+	free(fibr)
+	free(ctag_m)
+	return a,b,c,d
+

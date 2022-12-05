@@ -6,7 +6,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 double CPM_moves(VOX* pv, short * CCAlabels, BOX* pb, FIBERS* pf, CM* CMs, 
-int* attached, int* csize, double MAX_FOCALS_CM, double MAX_FOCALS_FB, double TARGETVOLUME_CM, double TARGETVOLUME_FB, double INELASTICITY_CM, double INELASTICITY_FB, double LMAX_CM, double LMAX_FB, double GN_CM, double GN_FB, double UNLEASH_CM, double UNLEASH_FB, double DETACH_CM, double DETACH_FB)
+int* attached, int* csize, double MAX_FOCALS_CM, double MAX_FOCALS_FB, double TARGETVOLUME_CM, double TARGETVOLUME_FB, double INELASTICITY_CM, double INELASTICITY_FB, double LMAX_CM, double LMAX_FB, double GN_CM, double GN_FB, double UNLEASH_CM, double UNLEASH_FB, double DETACH_CM, double DETACH_FB, double VOXSIZE, int NVX, int NVY, double JCMCM, double JCMMD, double JFBFB, double JFBMD,  double JFBCM)
 // cellular potts model: one Monte Carlo step
 {
 	int i,j,NRsteps = NV;
@@ -45,7 +45,7 @@ int* attached, int* csize, double MAX_FOCALS_CM, double MAX_FOCALS_FB, double TA
         		//if(go_on && ttag) // if a cell in xt (retracting)
         		if(ttag) // if a cell in xt (retracting)
 				{
-            		if (splitcheckCCR(pv,CCAlabels,pb,csize,xt,ttag))
+            		if (splitcheckCCR(pv,CCAlabels,pb,csize,xt,ttag, NVX, NVY))
                 		go_on = 0;
             		if(csize[ttag-1]==1) // cell cannot disappear (constraint may be removed)
                 		go_on = 0;
@@ -62,7 +62,7 @@ int* attached, int* csize, double MAX_FOCALS_CM, double MAX_FOCALS_FB, double TA
 
 			if(go_on)
 			{
-				dH = calcdH(pv,pf,CMs,csize,xt,xs,pick,ttag,stag,TARGETVOLUME_CM, TARGETVOLUME_FB, INELASTICITY_CM, INELASTICITY_FB, LMAX_CM, LMAX_FB, GN_CM, GN_FB, UNLEASH_CM, UNLEASH_FB, DETACH_CM, DETACH_FB);
+				dH = calcdH(pv,pf,CMs,csize,xt,xs,pick,ttag,stag,TARGETVOLUME_CM, TARGETVOLUME_FB, INELASTICITY_CM, INELASTICITY_FB, LMAX_CM, LMAX_FB, GN_CM, GN_FB, UNLEASH_CM, UNLEASH_FB, DETACH_CM, DETACH_FB, VOXSIZE, NVX, JCMCM, JCMMD, JFBFB, JFBMD, JFBCM);
 				
         		prob = exp(-IMMOTILITY*dH);
         		if (prob>(rand()/(double)RAND_MAX))
@@ -122,7 +122,7 @@ int* attached, int* csize, double MAX_FOCALS_CM, double MAX_FOCALS_FB, double TA
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-double CH_moves(VOX* pv, CM* CMs, double k)
+double CH_moves(VOX* pv, CM* CMs, double k, double VOXSIZE, int NVX, int NVY)
 // cellular potts model: one Monte Carlo step
 {
 	int i,j,NRsteps = NV;
@@ -150,7 +150,7 @@ double CH_moves(VOX* pv, CM* CMs, double k)
 			
 			if(pv[xt].contact!=pv[xs].contact && pv[xs].contact!=0)
 			{
-        		dH = calcdH_CH(pv, CMs, xt, xs);
+        		dH = calcdH_CH(pv, CMs, xt, xs, NVX);
         		prob = exp(-k*IMMOTILITY_CH*dH);
         		if (prob>(rand()/(double)RAND_MAX))
 				{
@@ -167,7 +167,7 @@ double CH_moves(VOX* pv, CM* CMs, double k)
 
 ////////////////////////////////////////////////////////////////////////////////
 BOOL splitcheckCCR(VOX* pv, short * CCAlabels, BOX * pb, int* 
-csize, int xt, int ttag)
+csize, int xt, int ttag, int NVX, int NVY)
 {
 	BOOL split;
 	int nbs[8],n,nb,prev,curr,in;

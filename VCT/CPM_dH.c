@@ -12,15 +12,15 @@
 #define LMAX(a)			(a==1 ? LMAX_CM : LMAX_FB)
 
 ////////////////////////////////////////////////////////////////////////////////
-double calcdH_CH(VOX* pv, CM* CMs, int xt, int xs)
+double calcdH_CH(VOX* pv, CM* CMs, int xt, int xs, int NVX)
 {
 	double dH, dHdist, dHborder;
 
 	dHborder = 0;
-	dHborder = calcdHborder(pv,xt, pv[xt].ctag);
+	dHborder = calcdHborder(pv,xt, pv[xt].ctag, NVX);
 
 	dHdist = 0;
-	dHdist = calcdHdist(pv, CMs, xt, xs, pv[xt].ctag);
+	dHdist = calcdHdist(pv, CMs, xt, xs, pv[xt].ctag, NVX);
 
 	dH = dHdist + dHborder;
 
@@ -29,7 +29,7 @@ double calcdH_CH(VOX* pv, CM* CMs, int xt, int xs)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-double calcdHborder(VOX* pv, int xt, int ttag)
+double calcdHborder(VOX* pv, int xt, int ttag, int NVX)
 {
 	double dHcontact = JB;
 	int nbs[8],n,nbtag;
@@ -50,37 +50,37 @@ double calcdHborder(VOX* pv, int xt, int ttag)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-double calcdHdist(VOX* pv, CM* CMs, int xt, int xs, int ttag)
+double calcdHdist(VOX* pv, CM* CMs, int xt, int xs, int ttag, int NVX)
 {
 	double dH = 0;
 
 	if(pv[xs].contact)
-		dH = G_NCH/dist(CMs,xt,ttag);
+		dH = G_NCH/dist(CMs,xt,ttag, NVX);
 
 	return dH;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-double calcdH(VOX* pv, FIBERS* pf, CM* CMs, int* csize, int xt, int xs, int pick, int ttag, int stag, double TARGETVOLUME_CM, double TARGETVOLUME_FB, double INELASTICITY_CM, double INELASTICITY_FB, double LMAX_CM, double LMAX_FB, double GN_CM, double GN_FB, double UNLEASH_CM, double UNLEASH_FB, double DETACH_CM, double DETACH_FB)
+double calcdH(VOX* pv, FIBERS* pf, CM* CMs, int* csize, int xt, int xs, int pick, int ttag, int stag, double TARGETVOLUME_CM, double TARGETVOLUME_FB, double INELASTICITY_CM, double INELASTICITY_FB, double LMAX_CM, double LMAX_FB, double GN_CM, double GN_FB, double UNLEASH_CM, double UNLEASH_FB, double DETACH_CM, double DETACH_FB, double VOXSIZE, int NVX, double JCMCM, double JCMMD, double JFBFB, double JFBMD,  double JFBCM)
 {
 	double dH, dHcontact, dHvol, dHfocals, dHsyncytium, dHnuclei;
 	int ctag;
 
 	dHcontact = 0;
-	dHcontact = calcdHcontact(pv,xt,xs,ttag,stag);
+	dHcontact = calcdHcontact(pv,xt,xs,ttag,stag, NVX, JCMCM, JCMMD, JFBFB, JFBMD, JFBCM);
 
 	dHvol = 0;
 	dHvol = calcdHvol(csize,ttag,stag,pv[xt].type,pv[xs].type,TARGETVOLUME_CM, TARGETVOLUME_FB, INELASTICITY_CM, INELASTICITY_FB);
 
 	dHfocals = 0;
-	dHfocals = calcdHprotrude(pv, CMs, xt, xs, ttag, stag, pf[xt].Q, pf[xs].Q, LMAX_CM, LMAX_FB, GN_CM, GN_FB, UNLEASH_CM, UNLEASH_FB, DETACH_CM, DETACH_FB);
+	dHfocals = calcdHprotrude(pv, CMs, xt, xs, ttag, stag, pf[xt].Q, pf[xs].Q, LMAX_CM, LMAX_FB, GN_CM, GN_FB, UNLEASH_CM, UNLEASH_FB, DETACH_CM, DETACH_FB, NVX);
 
 	dHsyncytium = 0;
 	if(E_bond)
-		dHsyncytium = calcdHsyncytium(pv, CMs, xt,xs,ttag,stag);
+		dHsyncytium = calcdHsyncytium(pv, CMs, xt,xs,ttag,stag, NVX);
 
 	dHnuclei = 0;
-	dHnuclei = calcdHnuclei(pv, CMs, xt, ttag, stag, DETACH_CM, DETACH_FB);
+	dHnuclei = calcdHnuclei(pv, CMs, xt, ttag, stag, DETACH_CM, DETACH_FB, VOXSIZE, NVX);
 
 	dH = dHcontact + dHvol + dHfocals + dHsyncytium + dHnuclei;
 	return dH;
@@ -122,7 +122,7 @@ double printdH(VOX* pv, FIBERS* pf, CM* CMs, int* csize, int xt, int xs, int pic
 //////////////////////////////////////////////////////////myfunc
 
 ////////////////////////////////////////////////////////////////////////////////
-double calcdHsyncytium(VOX* pv, CM* CMs, int xt, int xs, int ttag, int stag)
+double calcdHsyncytium(VOX* pv, CM* CMs, int xt, int xs, int ttag, int stag, int NVX)
 {
 	double dH = 0;
 	double bondS, bondT;
@@ -170,7 +170,7 @@ double calcdHsyncytium(VOX* pv, CM* CMs, int xt, int xs, int ttag, int stag)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-double calcdHcontact(VOX* pv, int xt, int xs, int ttag, int stag)
+double calcdHcontact(VOX* pv, int xt, int xs, int ttag, int stag, int NVX, double JCMCM, double JCMMD, double JFBFB, double JFBMD,  double JFBCM)
 {
 	double dHcontact, Hcontact, Hcontactn;
 	int nbs[8],n,nbtag;
@@ -261,7 +261,7 @@ double calcdHvol(int* csize, int ttag, int stag, int ttype, int stype, double TA
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-double calcdHprotrude(VOX* pv, CM* CMs, int xt, int xs, int ttag, int stag, int Qt, int Qs, double LMAX_CM, double LMAX_FB, double GN_CM, double GN_FB, double UNLEASH_CM, double UNLEASH_FB, double DETACH_CM, double DETACH_FB)
+double calcdHprotrude(VOX* pv, CM* CMs, int xt, int xs, int ttag, int stag, int Qt, int Qs, double LMAX_CM, double LMAX_FB, double GN_CM, double GN_FB, double UNLEASH_CM, double UNLEASH_FB, double DETACH_CM, double DETACH_FB, int NVX)
 {
 	double dH = 0;
 	double cost = 1.0, coss = 1.0;
@@ -277,8 +277,8 @@ double calcdHprotrude(VOX* pv, CM* CMs, int xt, int xs, int ttag, int stag, int 
 
 	if(pv[xs].contact){
 		
-		distt = dist(CMs,xt,stag);
-		dists = dist(CMs,xs,stag);
+		distt = dist(CMs,xt,stag, NVX);
+		dists = dist(CMs,xs,stag, NVX);
 		dH = GN(pv[xs].type)*( 	(distt < LMAX(pv[xs].type) ? 1/distt : INF)	*fabs(1/cost) - 
 								(dists < LMAX(pv[xs].type) ? 1/dists : 0)	*fabs(1/coss)
 							);															//protrusions grow up to LMAX, then have to stop or be erased
@@ -301,18 +301,18 @@ double calcdHprotrude(VOX* pv, CM* CMs, int xt, int xs, int ttag, int stag, int 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-double calcdHnuclei(VOX* pv, CM* CMs, int xt, int ttag, int stag, double DETACH_CM, double DETACH_FB)
+double calcdHnuclei(VOX* pv, CM* CMs, int xt, int ttag, int stag, double DETACH_CM, double DETACH_FB, double VOXSIZE, int NVX)
 {
 	double dH = 0;
 
 	//don't touch the nuclei
-	if(ttag && dist(CMs,xt,ttag)<NUCLEI_R)
+	if(ttag && dist(CMs,xt,ttag, NVX)<NUCLEI_R)
 		dH = NUCL*DETACH(pv[xt].type);
 
 	return dH;
 }
 
-double dist(CM* CMs, int xt, int tag)
+double dist(CM* CMs, int xt, int tag, int NVX)
 {
 	int xtx, xty;
 	xty = xt/NVX; xtx = xt%NVX;

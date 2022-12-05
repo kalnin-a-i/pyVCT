@@ -16,7 +16,6 @@ CFLAGS +=-fPIC
 
 libcpmfem.a: $(OBJECTS)
 	ar rcs $@ $^
-	mkdir -p output
 %.o : %.c, %.h
 	gcc -c $(CFLAGS) $< -o -ld -lm $@
 

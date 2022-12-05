@@ -5,6 +5,8 @@
 int cpmfem(
 	int NCX, int NCY, 
 	double PART,
+	double VOXSIZE,
+	int NVX, int NVY,
 	double GN_CM,
 	double GN_FB,
 	double TARGETVOLUME_CM,
@@ -25,7 +27,12 @@ int cpmfem(
 	double MAX_FOCALS_CM,
 	double MAX_FOCALS_FB,
 	int shifts,
-	double distanceF
+	double distanceF,
+	int NRINC,
+	char* typ,
+	int* cont_m,
+	int* fibr,
+	int* ctag_m
 );
 
 #endif

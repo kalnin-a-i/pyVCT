@@ -15,16 +15,17 @@ int SEED;
 
 //sample size
 #define MULT 1
-#define VOXSIZE .0025 			// [mm]
-#define SCALE (VOXSIZE/.0025)	//
-#define sizeX (1.0*MULT)		// [mm]
-#define sizeY (1.0*MULT)		// [mm]
+double VOXSIZE;		// [mm]
+double sizeX;
+double sizeY;
+#define SCALE (VOXSIZE/.0025)	//		// [mm]
+	// [mm]
 #define sizeMarginX 0.100 		// [mm] from one side
 #define sizeMarginY 0.100 		// [mm] from one side
 #define MARGINX rounder(sizeMarginX/VOXSIZE)
 #define MARGINY rounder(sizeMarginY/VOXSIZE)
-#define NVX rounder((sizeX+2*sizeMarginX)/VOXSIZE) 
-#define NVY rounder((sizeY+2*sizeMarginY)/VOXSIZE) 
+int NVX; 
+int NVY;
 #define NV  (NVX*NVY)
 //#define NRINC 901
 int NRINC;
