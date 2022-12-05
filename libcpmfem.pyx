@@ -1,6 +1,11 @@
 from utils.parse_config import parse_config
 from libc.stdlib cimport malloc, free
 import numpy as np
+
+from Cython.Compiler import Options
+
+Options.docstrings = True
+
 cdef extern from "structures.h":
 	ctypedef struct VOX:
 		int ctag
@@ -38,7 +43,22 @@ cdef extern from "libcpmfem.h":
 	int* fibr,
 	int* ctag_m)
 	
-cpdef py_cpmfem(int NCX, int NCY, PART, double VOXSIZE, double sizeX, double sizeY, scenario, NRINC):
+cpdef py_cpmfem(int NCX, int NCY, float PART, str scenario, int NRINC, double VOXSIZE=0.025, double sizeX=1, double sizeY=1):
+	'''
+	Simulates VCT model
+
+	Args:
+		NCX: int, number of cells by x-axis
+		NCY: int, number of cells by y-axis
+		PART: float, percentage of fibroblasts
+		NRINC: int, number of simulation steps
+		VOXSIZE: double, domain size in mm
+		sizeX: double, horizontal simulation area size mm
+		sizeY: double, vertical simulation area size mm
+
+	Returns:
+		a,b,c,d
+	'''
 	
 	cdef char* typ = <char*>malloc(NCX*NCY*sizeof(char))
 	sizeMarginX = 0.1
