@@ -43,3 +43,6 @@ imgs/
 maps/
 output/
 cpmfem
+
+*.a
+*.o

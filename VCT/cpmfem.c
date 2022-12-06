@@ -3,66 +3,43 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <math.h>
-
-static char *options = "p:smfc";
-static char *program_name;
-
-void parse_options(int argc, char *argv[])
-{
-    int opt;
-
-    program_name = argv[0];
-    silence=0;
-    distanceF=20.0;
-    shifts=0;
-    CONT = 0;
-    CONT_INHIB = 1;
-    #include "conf/cnfgSN.cfg"
-
-    while ((opt = getopt(argc, argv, options)) != -1) {
-        switch (opt) {
-        case 'p':
-        	SEED			= atoi(strtok(optarg, ","));
-            NRINC			= atoi(strtok(NULL, ","));          
-            break;
-        case 's':
-        	silence=1;
-        	break;
-        case 'f':
-        	distanceF = 0.010;
-
-        	#include "conf/cnfgSF.cfg"
-
-        	break;
-        case 'm':
-        	shifts = 1;
-        	break;
-        case 'c':			//move contacts if they are under the cell. If CONT=0, then only contacts on the perifery move.
-        	CONT = 1;			//switches on movement of the attachment sites under the cell, not only on the periphery
-        	CONT_INHIB = 0;		//switches off simple variant of contact inhibitio, when the cell just does not create new attachment sites when it is facing a neighbouring cell there
-        						//these two properties can be separated. In "Virtual cardiac monolayers..." we used 		CONT = 0, CONT_INHIB = 1
-        						//for pathways formation we changes the idea behind contact inhibition, so we switched to 	CONT = 1, CONT_INHIB = 0
-        	break;
-        default:
-            printf("Wrong parameter");
-            break;
-        }
-    }
-
-    if(shifts==1)
-    	if(distanceF>1.0){
-		    #include "conf/cnfgMN.cfg"
-    	}
-    	else{
-    		#include "conf/cnfgMF.cfg"
-    	}
-    
-    NCX *= MULT;
-    NCY *= MULT;
-}
+#include "libcpmfem.h"
 
 
-int main(int argc, char *argv[])
+
+int cpmfem(
+	int NCX, int NCY, 
+	double PART,
+	double VOXSIZE,
+	int NVX, int NVY,
+	double GN_CM,
+	double GN_FB,
+	double TARGETVOLUME_CM,
+	double TARGETVOLUME_FB,
+	double DETACH_CM,
+	double DETACH_FB,
+	double INELASTICITY_FB,
+	double INELASTICITY_CM,
+	double JCMMD,
+	double JFBMD,
+	double JCMCM,
+	double JFBFB,
+	double JFBCM,
+	double UNLEASH_CM,
+	double UNLEASH_FB,
+	double LMAX_CM,
+	double LMAX_FB,
+	double MAX_FOCALS_CM,
+	double MAX_FOCALS_FB,
+	int shifts,
+	double distanceF,
+	int NRINC,
+	char* typ,
+	int* cont_m,
+	int* fibr,
+	int* ctag_m
+	
+)
 {
 
 	struct timeval tv;
@@ -76,8 +53,8 @@ int main(int argc, char *argv[])
 	int *csize;
 	int incr, startincr;
 	double acceptance, acceptance_phi;
-
-	parse_options(argc, argv);
+	CONT = 0;
+    CONT_INHIB = 1;
 	
 	if(!silence){
 		printf("SEED = %d\n",SEED);
@@ -113,15 +90,15 @@ int main(int argc, char *argv[])
 
 	/// INITIALIZE ///
    	srand(SEED); mt_init();
-   	pv = init_voxels();
-	pf = set_fibers();
+   	pv = init_voxels(NVX, NVY);
+	pf = set_fibers(distanceF, VOXSIZE, NVX, NVY);
 	BOX * pb = allocBOX(NCX*NCY+1);
 
-	write_fibers(pf);
+	write_fibers(pf, NVX, NVY);
 
 	startincr = 0;
 	types = calloc((NCX*NCY+1), sizeof(int));
-	NRc = init_cells(pv,types,pb);write_cells(pv,0);
+	NRc = init_cells(pv,types,pb,NCX,NCY, PART, shifts, TARGETVOLUME_FB, VOXSIZE, NVX, NVY);write_cells(pv,0, NVX, NVY);
 	csize = calloc(NRc, sizeof(int)); for(c=0;c<NRc;c++) {csize[c]=0;}
 	for(v=0;v<NV;v++) {if(pv[v].ctag) {csize[pv[v].ctag-1]++;}}
 
@@ -142,13 +119,12 @@ int main(int argc, char *argv[])
 		if (incr % STEP_PRINT == 0){
 			if(!silence)
 				printf("\nSTART INCREMENT %d",incr);
-			write_cells(pv,incr);
-			write_contacts(pv,incr);
+			write_cells(pv,incr, NVX, NVY);
+			write_contacts(pv,incr, NVX, NVY);
 		}
 
-		findCM(pv,CMs,NRc);
-		acceptance = CPM_moves(pv,CCAlabels,pb,pf,CMs, 
-attached,csize);
+		findCM(pv,CMs,NRc, NVX, NVY);
+		acceptance = CPM_moves(pv,CCAlabels,pb,pf,CMs,attached,csize,MAX_FOCALS_CM,MAX_FOCALS_FB, TARGETVOLUME_CM, TARGETVOLUME_FB, INELASTICITY_CM, INELASTICITY_FB, LMAX_CM, LMAX_FB, GN_CM, GN_FB, UNLEASH_CM, UNLEASH_FB, DETACH_CM, DETACH_FB, VOXSIZE, NVX, NVY, JCMCM, JCMMD, JFBFB, JFBMD, JFBCM);
 
 		if (incr % STEP_PRINT == 0 && !silence){
 			printf("\nAcceptance rate %.4f",acceptance);
@@ -159,30 +135,30 @@ attached,csize);
 	if(!silence)
 	printf("\nSIMULATION FINISHED!\n");
 
-	write_contacts(pv,0);
+	write_contacts(pv,0, NVX, NVY);
 
 	/*pv = init_voxels();
 	read_cells(pv,types, NRc, "./output/ctags1.sout","./output/conts1.sout","./output/types.sout");*/
 
 	/// START DISTRIBUTION ///
-	findCM(pv,CMs,NRc);
+	findCM(pv,CMs,NRc, NVX, NVY);
 	for(incr=startincr; incr<NRINC_CH; incr++)
 	{
 		if (incr % 100 == 0){
 			if(!silence)
 				printf("\nSTART CHANNEL DISTRIBUTION %d",incr);
-			write_contacts(pv,incr+1);
+			write_contacts(pv,incr+1, NVX, NVY);
 		}
 
-		acceptance = CH_moves(pv, CMs, 0.5 + 0.5*incr/NRINC);
+		acceptance = CH_moves(pv, CMs, 0.5 + 0.5*incr/NRINC, VOXSIZE, NVX, NVY);
 
 		if (incr % 100 == 0 && !silence){
 			printf("\nAcceptance rate %.4f",acceptance);
 		}
 	}
 
-	write_cells(pv,1);
-	write_contacts(pv,1);
+	write_cells(pv,1, NVX, NVY);
+	write_contacts(pv,1, NVX, NVY);
 
 	/// END ///
 	if(!silence)
@@ -191,6 +167,23 @@ attached,csize);
 	gettimeofday(&tv, NULL);
 	if(!silence)
 	printf("Took %lds\n", tv.tv_sec - time);
+	
+	//fill our outer massives//
+	int i,j,k;
+	for(i=0; i<NVX; i++) {
+    	for (j=0; j<NVY; j++) {
+        	k = i + j * NVX;
+   			ctag_m[k]=pv[k].ctag;
+			cont_m[k]=pv[k].contact;
+			fibr[k]=(char)pf[k].Q;
+		}
+    }
+	int l;
+	for(l=0; l<NRc; l++) {
+      typ[l] = types[1+l];
+    }
+
+	printf("\nmassives done!\n");
 
 	free(pv); 
 	free(pf);

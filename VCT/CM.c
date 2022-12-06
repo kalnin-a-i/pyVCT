@@ -22,7 +22,7 @@ BOX* allocBOX(int NRc)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void findCM(VOX* pv, CM* CMs, int NRc)
+void findCM(VOX* pv, CM* CMs, int NRc, int NVX, int NVY)
 // find center of mass
 {
 	int vx,vy,v,i;
