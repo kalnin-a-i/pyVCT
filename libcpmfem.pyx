@@ -6,12 +6,6 @@ from Cython.Compiler import Options
 
 Options.docstrings = True
 
-cdef extern from "structures.h":
-	ctypedef struct VOX:
-		int ctag
-		int contact
-		int type
-		int bond
 cdef extern from "libcpmfem.h":
 	int cpmfem(int NCX, int NCY, 
 	double PART,
@@ -43,10 +37,9 @@ cdef extern from "libcpmfem.h":
 	int* fibr,
 	int* ctag_m)
 	
-cpdef py_cpmfem(int NCX, int NCY, float PART, str scenario, int NRINC, double VOXSIZE=0.025, double sizeX=1, double sizeY=1):
+cpdef py_cpmfem(int NCX, int NCY, PART, double VOXSIZE, double sizeX, double sizeY, scenario, NRINC):
 	'''
 	Simulates VCT model
-
 	Args:
 		NCX: int, number of cells by x-axis
 		NCY: int, number of cells by y-axis
@@ -55,11 +48,11 @@ cpdef py_cpmfem(int NCX, int NCY, float PART, str scenario, int NRINC, double VO
 		VOXSIZE: double, domain size in mm
 		sizeX: double, horizontal simulation area size mm
 		sizeY: double, vertical simulation area size mm
-
+		scenario: str, one of 4('monolayer_on_fiber' , 'monolayer_without_fiber' , 'single_on_fiber' , 'single_without_fiber')
 	Returns:
-		a,b,c,d
+		(np.arrays for usage in draw.py)
+		types, ctags, fibers, contacts
 	'''
-	
 	cdef char* typ = <char*>malloc(NCX*NCY*sizeof(char))
 	sizeMarginX = 0.1
 	sizeMarginY = 0.1
@@ -72,27 +65,30 @@ cpdef py_cpmfem(int NCX, int NCY, float PART, str scenario, int NRINC, double VO
 
 	cfg = parse_config('./utils/config.yaml', scenario)
 	cpmfem(NCX, NCY, PART, VOXSIZE, NVX, NVY, cfg['GN_CM'], cfg['GN_FB'], cfg['TARGETVOLUME_CM'], cfg['TARGETVOLUME_FB'], cfg['DETACH_CM'], cfg['DETACH_FB'], cfg['INELASTICITY_FB'], cfg['INELASTICITY_CM'],  cfg['JCMMD'], cfg['JFBMD'], cfg['JCMCM'], cfg['JFBFB'], cfg['JFBCM'], cfg['UNLEASH_CM'], cfg['UNLEASH_FB'], cfg['LMAX_CM'], cfg['LMAX_FB'], cfg['MAX_FOCALS_CM'], cfg['MAX_FOCALS_FB'], cfg['shifts'], cfg['distanceF'], NRINC, typ, cont_m, fibr, ctag_m)
-	a=[]
-	b=[]
-	c=[]
-	d=[]
+	types=[]
+	ctags=[]
+	fibers=[]
+	contacts=[]
 	for i in range(NVY):
-		d.append([])
-		b.append([])
-		c.append([])
+		ctags.append([])
+		fibers.append([])
+		contacts.append([])
 	for i in range(NVX):
 		for j in range(NVY):
 			k=i+j*NVX
-			b[i].append(ctag_m[k])
-			c[i].append(fibr[k])
-			d[i].append(cont_m[k])
+			ctags[i].append(ctag_m[k])
+			fibers[i].append(fibr[k])
+			contacts[i].append(cont_m[k])
 	for i in range(NCX*NCY):
-		a.append(int(typ[i]))
+		types.append(int(typ[i]))
 	
-			
+	types=np.array(types)
+	ctags=np.array(ctags)
+	fibers=np.array(fibers)
+	contacts=np.array(contacts)		
 	free(typ)
 	free(cont_m)
 	free(fibr)
 	free(ctag_m)
-	return a,b,c,d
+	return types, ctags, fibers, contacts
 
