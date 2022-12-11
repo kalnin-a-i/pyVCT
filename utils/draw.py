@@ -3,6 +3,17 @@ import sys
 from numpngw import write_png
 
 def make_image(n_int, CMs_ind):
+	'''
+	Draws result of simulation
+
+	Args:
+		ctasg: np.ndarray, array with cell types 
+		conts: np.ndarray, array with cell contacts
+		fibs: np.ndarray, array with fibers
+
+	Returns:
+		img: np.ndarray, array with image 
+	'''
 
 	n = str(n_int)
 	
