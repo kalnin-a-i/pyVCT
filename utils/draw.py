@@ -2,25 +2,26 @@ import numpy as np
 import sys
 from numpngw import write_png
 
-def make_image(n_int, CMs_ind):
+def make_image(types,ctags,fibs,conts,cont_param):
 	'''
 	Draws result of simulation
 
 	Args:
-		ctasg: np.ndarray, array with cell types 
+		types: np.ndarray, array with type of each cell
+		ctasg: np.ndarray, array with id of cell in each point 
 		conts: np.ndarray, array with cell contacts
 		fibs: np.ndarray, array with fibers
+		cont_param: int, 0-not to and 1-to show contacts on image
+		
 
 	Returns:
 		img: np.ndarray, array with image 
 	'''
 
-	n = str(n_int)
-	
-	table=np.loadtxt('./output/ctags'+n+'.out', skiprows=1)
+	CMs_ind = np.where(types==1)[0]+1
+
+	table=ctags
 	img = np.ones(table.shape+(3,), dtype=np.uint8)*255
-	conts=np.loadtxt('./output/contactM'+n+'.out', skiprows=1)	
-	fibs=np.loadtxt('./output/fib.out', skiprows=1)	
 
 	edges = np.zeros(table.shape, dtype = np.uint8)
 	vert = table[:,1:] != table[:,:-1]
@@ -39,9 +40,9 @@ def make_image(n_int, CMs_ind):
 
 	f = 0;
 	cont_edges = edges
-	if sys.argv[3] != "0":		#if not 0, show contacts/attachments at least on the edge of the cell
+	if cont_param != "0":		#if not 0, show contacts/attachments at least on the edge of the cell
 		f = 0.5
-	if sys.argv[3] == "2":		#if 2, show all of the attachment sites, even those under the cell
+	if cont_param == "2":		#if 2, show all of the attachment sites, even those under the cell
 		cont_edges = 1 
 
 	img[:,:,0] = conts*255
@@ -58,18 +59,9 @@ def make_image(n_int, CMs_ind):
 	conv = (2.5/1000)**2 #to mm
 	areas = (np.sum(CMs)*conv,np.sum(FBs)*conv)
 
-	write_png("./imgs/example%05d.png" % n_int, img)
+	#write_png("./imgs/example.png", img)
 
-	return areas
+	return img
 
 
-types=np.loadtxt('./output/types.out', dtype=np.uint8)
-CMs_ind = np.where(types==1)[0]+1
-FBs_ind = np.where(types==2)[0]+1
 
-print('N CMs:',len(CMs_ind),'; N FBs:',len(FBs_ind),'; % FBs:', 1.0*len(FBs_ind)/(len(CMs_ind)+len(FBs_ind)))
-
-print("MCS (CMs area, FBs area):")
-
-for n in range(0,int(sys.argv[1]),int(sys.argv[2])):
-	print(n,make_image(n, CMs_ind))
