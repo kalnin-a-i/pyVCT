@@ -40,9 +40,9 @@ def make_image(types,ctags,fibs,conts,cont_param):
 
 	f = 0;
 	cont_edges = edges
-	if cont_param != "0":		#if not 0, show contacts/attachments at least on the edge of the cell
+	if cont_param != 0:		#if not 0, show contacts/attachments at least on the edge of the cell
 		f = 0.5
-	if cont_param == "2":		#if 2, show all of the attachment sites, even those under the cell
+	if cont_param == 2:		#if 2, show all of the attachment sites, even those under the cell
 		cont_edges = 1 
 
 	img[:,:,0] = conts*255
@@ -59,7 +59,7 @@ def make_image(types,ctags,fibs,conts,cont_param):
 	conv = (2.5/1000)**2 #to mm
 	areas = (np.sum(CMs)*conv,np.sum(FBs)*conv)
 
-	#write_png("./imgs/example.png", img)
+	#write_png("./imgs/exampleof.png", img)
 
 	return img
 
