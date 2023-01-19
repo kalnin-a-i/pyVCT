@@ -37,8 +37,8 @@ int cpmfem(
 	char* typ,
 	int* cont_m,
 	int* fibr,
-	int* ctag_m
-	
+	int* ctag_m,
+	float* PART_matrix
 )
 {
 
@@ -98,7 +98,7 @@ int cpmfem(
 
 	startincr = 0;
 	types = calloc((NCX*NCY+1), sizeof(int));
-	NRc = init_cells(pv,types,pb,NCX,NCY, PART, shifts, TARGETVOLUME_FB, VOXSIZE, NVX, NVY);write_cells(pv,0, NVX, NVY);
+	NRc = init_cells(pv,types,pb,NCX,NCY, PART, shifts, TARGETVOLUME_FB, VOXSIZE, NVX, NVY, PART_matrix);write_cells(pv,0, NVX, NVY);
 	csize = calloc(NRc, sizeof(int)); for(c=0;c<NRc;c++) {csize[c]=0;}
 	for(v=0;v<NV;v++) {if(pv[v].ctag) {csize[pv[v].ctag-1]++;}}
 
@@ -188,7 +188,6 @@ int cpmfem(
 	free(pv); 
 	free(pf);
 	free(CCAlabels);
-	
 	return 0;
 }
 

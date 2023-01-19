@@ -32,7 +32,8 @@ int cpmfem(
 	char* typ,
 	int* cont_m,
 	int* fibr,
-	int* ctag_m
+	int* ctag_m,
+	float* PART_matrix
 );
 
 #endif

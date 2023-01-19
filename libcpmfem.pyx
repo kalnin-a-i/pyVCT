@@ -35,9 +35,10 @@ cdef extern from "libcpmfem.h":
 	char* typ,
 	int* cont_m,
 	int* fibr,
-	int* ctag_m)
+	int* ctag_m,
+	float* PART_matrix)
 	
-cpdef py_cpmfem(int NCX, int NCY, PART, double VOXSIZE, double sizeX, double sizeY, scenario, NRINC):
+cpdef py_cpmfem(int NCX, int NCY, PART, double VOXSIZE, double sizeX, double sizeY, scenario, NRINC, PART_matrix):
 	'''
 	Simulates VCT model
 	Args:
@@ -62,9 +63,18 @@ cpdef py_cpmfem(int NCX, int NCY, PART, double VOXSIZE, double sizeX, double siz
 	cdef int* cont_m = <int*>malloc(NVX*NVY*sizeof(int))
 	cdef int* fibr = <int*>malloc(NVX*NVY*sizeof(int))
 	cdef int* ctag_m = <int*>malloc(NVX*NVY*sizeof(int))
-
+	
+	cdef float* matrix = <float*>malloc(NVX*NVY*sizeof(float))
+	if type(PART_matrix)==float:
+		for i in range(NVX*NVY):
+			matrix[i]=PART_matrix
+	if type(PART_matrix)==type(np.array([[0,1],[1,0]])):
+		for i in range(NVY):
+			for j in range(NVX):
+				k=j+NVX*i
+				matrix[k]=PART_matrix[i][j]
 	cfg = parse_config('./utils/config.yaml', scenario)
-	cpmfem(NCX, NCY, PART, VOXSIZE, NVX, NVY, cfg['GN_CM'], cfg['GN_FB'], cfg['TARGETVOLUME_CM'], cfg['TARGETVOLUME_FB'], cfg['DETACH_CM'], cfg['DETACH_FB'], cfg['INELASTICITY_FB'], cfg['INELASTICITY_CM'],  cfg['JCMMD'], cfg['JFBMD'], cfg['JCMCM'], cfg['JFBFB'], cfg['JFBCM'], cfg['UNLEASH_CM'], cfg['UNLEASH_FB'], cfg['LMAX_CM'], cfg['LMAX_FB'], cfg['MAX_FOCALS_CM'], cfg['MAX_FOCALS_FB'], cfg['shifts'], cfg['distanceF'], NRINC, typ, cont_m, fibr, ctag_m)
+	cpmfem(NCX, NCY, PART, VOXSIZE, NVX, NVY, cfg['GN_CM'], cfg['GN_FB'], cfg['TARGETVOLUME_CM'], cfg['TARGETVOLUME_FB'], cfg['DETACH_CM'], cfg['DETACH_FB'], cfg['INELASTICITY_FB'], cfg['INELASTICITY_CM'],  cfg['JCMMD'], cfg['JFBMD'], cfg['JCMCM'], cfg['JFBFB'], cfg['JFBCM'], cfg['UNLEASH_CM'], cfg['UNLEASH_FB'], cfg['LMAX_CM'], cfg['LMAX_FB'], cfg['MAX_FOCALS_CM'], cfg['MAX_FOCALS_FB'], cfg['shifts'], cfg['distanceF'], NRINC, typ, cont_m, fibr, ctag_m, matrix)
 	types=[]
 	ctags=[]
 	fibers=[]
@@ -90,5 +100,6 @@ cpdef py_cpmfem(int NCX, int NCY, PART, double VOXSIZE, double sizeX, double siz
 	free(cont_m)
 	free(fibr)
 	free(ctag_m)
+	free(matrix)
 	return types, ctags, fibers, contacts
 

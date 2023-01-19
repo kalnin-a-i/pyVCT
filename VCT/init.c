@@ -40,15 +40,15 @@ VOX* init_voxels(int NVX, int NVY)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-int init_cells(VOX* pv, int * types, BOX* pb, int NCX, int NCY, double PART, int shifts, double TARGETVOLUME_FB, double VOXSIZE, int NVX, int NVY)
+int init_cells(VOX* pv, int * types, BOX* pb, int NCX, int NCY, double PART, int shifts, double TARGETVOLUME_FB, double VOXSIZE, int NVX, int NVY, float* PART_matrix)
 {
-	int v, vx, vy, i, j, ix, iy;
+	int v, vx, vy, i, j, ix, iy, dxi, dyi, count, k;
 	int NRc;
+	double prob, prob_norm;
 	double r01;
 	double d;
 	double dx, dy,dvx,dvy; // distance to center
 	int r;
-
 	NRc = 0;
 
 	dx = (double) (NVX - 2 * MARGINX) / (NCX);
@@ -62,8 +62,21 @@ int init_cells(VOX* pv, int * types, BOX* pb, int NCX, int NCY, double PART, int
 			dvy = (mt_random()%((int) dy-2*r+1)) -(dy/2 - r);
 			vx = MARGINX + (int) (((double) ix + 0.5) * dx + shifts*dvx);
 			vy = MARGINY + (int) (((double) iy + 0.5) * dy + shifts*dvy);
+			count=0;
+			prob=0;
+			prob_norm=0;
+			for (dxi = MARGINX+ix*(int)dx+1; dxi < MARGINX+(ix+1)*(int)dx-1; dxi++){
+				for(dyi = MARGINY+iy*(int)dy+1; dyi < MARGINY+(iy+1)*(int)dy-1; dyi++){
+					k=dxi+NVX*dyi;
+					prob=prob+PART_matrix[k];
+					count=count+1;
+
+				}
+			}
+			prob_norm=prob/count;
+			
 			NRc++;
-			types[NRc] = (PART<(rand()/(double)RAND_MAX) ? 1 : 2);
+			types[NRc] = (prob_norm<(rand()/(double)RAND_MAX) ? 1 : 2);
 			pb[NRc].x1 = vx-r;
 			pb[NRc].x2 = vx+r;
 			pb[NRc].y1 = vy-r;

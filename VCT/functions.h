@@ -10,7 +10,7 @@
 // init.c
 int* 		alloc_attach(int NRc);
 VOX*		init_voxels(int NVX, int NVY);
-int 		init_cells(VOX* pv, int * types, BOX* pb, int NCX, int NCY, double PART, int shifts, double TARGETVOLUME_FB, double VOXSIZE, int NVX, int NVY);
+int 		init_cells(VOX* pv, int * types, BOX* pb, int NCX, int NCY, double PART, int shifts, double TARGETVOLUME_FB, double VOXSIZE, int NVX, int NVY, float* PART_matrix);
 FIBERS* 	set_fibers(double distanceF, double VOXSIZE, int NVX, int NVY);
 
 
