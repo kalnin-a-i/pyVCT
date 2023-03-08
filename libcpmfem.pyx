@@ -86,9 +86,9 @@ cpdef py_cpmfem(int NCX, int NCY, PART, double VOXSIZE, double sizeX, double siz
 	for i in range(NVX):
 		for j in range(NVY):
 			k=i+j*NVX
-			ctags[i].append(ctag_m[k])
-			fibers[i].append(fibr[k])
-			contacts[i].append(cont_m[k])
+			ctags[j].append(ctag_m[k])
+			fibers[j].append(fibr[k])
+			contacts[j].append(cont_m[k])
 	for i in range(NCX*NCY):
 		types.append(int(typ[i]))
 	
